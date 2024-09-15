@@ -16,7 +16,7 @@ wandb.config = {
     "num_epochs": 50,
     "train_lr": 1e-4,
     "batch_size": 8,
-    "mse_lambda_weight": 0.3,
+    "mse_lambda_weight": 0.1,
     "embedding_lambda_weight" : 0.7,
     "speakers_per_batch":64,
     "utterances_per_speaker":10
@@ -26,7 +26,7 @@ wandb.config = {
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 데이터 경로 설정
-root_dir = '../Data/kss/'  # 데이터셋 경로
+root_dir = '../Data/LJSpeech/'  # 데이터셋 경로
 train_loader = get_dataloader(root_dir=root_dir, batch_size=32)
 
 # model load
@@ -43,15 +43,14 @@ for epoch in range(wandb.config["num_epochs"]):
     running_mse_loss = 0.0
 
     for batch in tqdm(train_loader):
-        inputs = batch.data.to(device)
+        inputs = batch.to(device)
 
         # 노이즈 생성
         noise = noise_generator(inputs)
         
         # 손실 함수 계산
         loss, embedding_loss, mse_loss = loss_function(freevc_encoder, inputs, noise, 
-                            mse_lambda_weight=wandb.config["mse_lambda_weight"],
-                            embedding_lambda_weight=wandb.config["embedding_lambda_weight"])
+                            mse_lambda_weight=wandb.config["mse_lambda_weight"])
 
         # 역전파 및 최적화
         optimizer.zero_grad()
