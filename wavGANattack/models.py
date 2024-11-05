@@ -19,6 +19,8 @@ class Generator(nn.Module):
     def forward(self, x):
         return self.model(x)
 
+
+
 class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
@@ -30,15 +32,14 @@ class Discriminator(nn.Module):
             nn.Conv1d(128, 256, kernel_size=3, padding=1),
             nn.LeakyReLU(0.2, inplace=True),
         )
+        self.pool = nn.AdaptiveAvgPool1d(1024)  # 1024 크기로 변환
         self.flatten = nn.Flatten()
+        self.fc = nn.Linear(256 * 1024, 1)  # 고정된 크기에 맞춘 Linear 레이어
 
     def forward(self, x):
         x = self.conv(x)
+        x = self.pool(x)  # 고정된 출력 크기
         x = self.flatten(x)
-        # x의 크기 출력
-        
-        # 동적으로 Linear 레이어의 입력 크기를 설정
-        linear_layer = nn.Linear(x.size(1), 1).to(x.device)
-        x = linear_layer(x)
-        
+        x = self.fc(x)
         return torch.sigmoid(x)
+
